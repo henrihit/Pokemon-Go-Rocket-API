@@ -132,12 +132,12 @@ namespace PokemonGo.RocketAPI.Logic
                 await _client.UpdatePlayerLocation(pokemon.Latitude, pokemon.Longitude, _clientSettings.DefaultAltitude);
 
                 var encounter = await _client.EncounterPokemon(pokemon.EncounterId, pokemon.SpawnpointId);
-                await CatchEncounter(encounter, pokemon);
+                await CatchEncounter(encounter, pokemon, distance);
             }
             await Task.Delay(15000);
         }
 
-        private async Task CatchEncounter(EncounterResponse encounter, MapPokemon pokemon)
+        private async Task CatchEncounter(EncounterResponse encounter, MapPokemon pokemon, Double distance)
         {
 
             CatchPokemonResponse caughtPokemonResponse;
@@ -150,7 +150,6 @@ namespace PokemonGo.RocketAPI.Logic
                 }
 
                 var pokeball = await GetBestBall(encounter?.WildPokemon);
-                var distance = Navigation.DistanceBetween2Coordinates(_client.CurrentLat, _client.CurrentLng, pokemon.Latitude, pokemon.Longitude);
                 caughtPokemonResponse = await _client.CatchPokemon(pokemon.EncounterId, pokemon.SpawnpointId, pokemon.Latitude, pokemon.Longitude, pokeball);
                 Logger.Write(caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchSuccess ? $"We caught a {pokemon.PokemonId} with CP {encounter?.WildPokemon?.PokemonData?.Cp} and CaptureProbability: {encounter?.CaptureProbability.CaptureProbability_.First()} using a {pokeball} in {Math.Round(distance)}m distance" : $"{pokemon.PokemonId} with CP {encounter?.WildPokemon?.PokemonData?.Cp} CaptureProbability: {encounter?.CaptureProbability.CaptureProbability_.First()} in {Math.Round(distance)}m distance {caughtPokemonResponse.Status} while using a {pokeball}..", LogLevel.Info);
                 await Task.Delay(2000);
